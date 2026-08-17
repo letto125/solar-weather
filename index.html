@@ -1,1 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Solar Weather">
+<meta name="theme-color" content="#0b1020">
 
+<title>Solar Weather</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                 "Helvetica Neue", Arial, sans-serif;
+    background: #070b18;
+    color: white;
+}
+
+.app {
+    min-height: 100vh;
+    padding: 20px 18px 100px;
+    background:
+        radial-gradient(circle at 50% 0%, #263b73 0%, #10182e 35%, #070b18 75%);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 25px;
+}
+
+.title {
+    font-size: 29px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #aeb8d2;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.refresh {
+    border: 0;
+    background: rgba(255,255,255,.12);
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 21px;
+}
+
+.card {
+    margin-top: 22px;
+    padding: 22px;
+    border-radius: 27px;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.13);
+    box-shadow: 0 15px 40px rgba(0,0,0,.25);
+    backdrop-filter: blur(18px);
+}
+
+.location {
+    color: #b7c2dd;
+    font-size: 15px;
+}
+
+.temperature {
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: -4px;
+    margin: 4px 0;
+}
+
+.condition {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.updated {
+    color: #98a4c2;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.sun {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    margin: 15px auto 20px;
+    background: radial-gradient(circle, #fffbd1 0%, #ffd34e 38%, #ff8c00 70%, #ff5c00 100%);
+    box-shadow:
+        0 0 25px #ffbd32,
+        0 0 65px rgba(255,150,20,.65),
+        0 0 110px rgba(255,120,0,.35);
+}
+
+.section-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 13px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat {
+    background: rgba(255,255,255,.08);
+    border-radius: 19px;
+    padding: 17px;
+}
+
+.stat-icon {
+    font-size: 23px;
+}
+
+.stat-name {
+    color: #9eabc7;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.stat-value {
+    font-size: 21px;
+    font-weight: 650;
+    margin-top: 3px;
+}
+
+.alert {
+    border-radius: 20px;
+    padding: 17px;
+    margin-top: 13px;
+    background: rgba(255,180,40,.13);
+    border: 1px solid rgba(255,190,60,.22);
+}
+
+.alert-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.alert-text {
+    color: #c4cce0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.forecast {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.day {
+    min-width: 82px;
+    text-align: center;
+    padding: 14px 8px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.08);
+}
+
+.day-name {
+    color: #aab5d0;
+    font-size: 13px;
+}
+
+.day-icon {
+    font-size: 28px;
+    margin: 9px 0;
+}
+
+.day-temp {
+    font-weight: 650;
+}
+
+.bottom {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    height: 68px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 25px;
+    background: rgba(25,31,52,.90);
+    border: 1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(20px);
+}
+
+.nav-button {
+    border: 0;
+    background: none;
+    color: #7f8ba8;
+    font-size: 12px;
+    text-align: center;
+}
+
+.nav-button span {
+    display: block;
+    font-size: 23px;
+    margin-bottom: 3px;
+}
+
+.nav-button.active {
+    color: white;
+}
+
+.popup {
+    position: fixed;
+    left: 20px;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 25px;
+    border-radius: 25px;
+    background: #151c32;
+    border: 1px solid rgba(255,255,255,.15);
+    box-shadow: 0 20px 70px rgba(0,0,0,.55);
+    display: none;
+    z-index: 20;
+}
+
+.popup h2 {
+    margin-top: 0;
+}
+
+.popup p {
+    color: #b9c3db;
+    line-height: 1.5;
+}
+
+.close {
+    width: 100%;
+    border: 0;
+    padding: 13px;
+    border-radius: 15px;
+    background: #ffffff;
+    color: #111827;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="header">
+        <div>
+            <div class="title">Solar Weather ☀️</div>
+            <div class="subtitle">Space weather & solar activity</div>
+        </div>
+
+        <button class="refresh" onclick="refreshData()">↻</button>
+    </div>
+
+    <div class="card">
+
+        <div class="location">📍 Current Conditions</div>
+
+        <div class="sun"></div>
+
+        <div style="text-align:center">
+            <div class="temperature" id="temperature">72°</div>
+            <div class="condition" id="condition">Clear Skies</div>
+            <div class="updated" id="updated">Updated just now</div>
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">Solar Activity</div>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-icon">☀️</div>
+                <div class="stat-name">Solar Activity</div>
+                <div class="stat-value" id="activity">Low</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🌌</div>
+                <div class="stat-name">Aurora Chance</div>
+                <div class="stat-value" id="aurora">18%</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">🧲</div>
+                <div class="stat-name">Geomagnetic</div>
+                <div class="stat-value" id="geo">Quiet</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-icon">💨</div>
+                <div class="stat-name">Solar Wind</div>
+                <div class="stat-value" id="wind">420 km/s</div>
+            </div>
+
+        </div>
+
+        <div class="alert">
+
+            <div class="alert-title">🌠 Space Weather Alert</div>
+
+            <div class="alert-text" id="alertText">
+                Solar conditions are currently calm.
+                No significant geomagnetic storm is expected.
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="section-title">7-Day Outlook</div>
+
+        <div class="forecast">
+
+            <div class="day">
+                <div class="day-name">Today</div>
+                <div class="day-icon">☀️</div>
+                <div class="day-temp">72°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Tue</div>
+                <div class="day-icon">🌤️</div>
+                <div class="day-temp">74°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Wed</div>
+                <div class="day-icon">☀️</div>
+                <div class="day-temp">76°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Thu</div>
+                <div class="day-icon">🌥️</div>
+                <div class="day-temp">71°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Fri</div>
+                <div class="day-icon">☀️</div>
+                <div class="day-temp">78°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Sat</div>
+                <div class="day-icon">🌤️</div>
+                <div class="day-temp">75°</div>
+            </div>
+
+            <div class="day">
+                <div class="day-name">Sun</div>
+                <div class="day-icon">☀️</div>
+                <div class="day-temp">77°</div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="bottom">
+
+    <button class="nav-button active" onclick="showHome()">
+        <span>☀️</span>
+        Home
+    </button>
+
+    <button class="nav-button" onclick="showAurora()">
+        <span>🌌</span>
+        Aurora
+    </button>
+
+    <button class="nav-button" onclick="showInfo()">
+        <span>ⓘ</span>
+        Info
+    </button>
+
+</div>
+
+<div class="popup" id="popup">
+
+    <h2 id="popupTitle">Solar Weather</h2>
+
+    <p id="popupText">
+        Solar Weather combines regular weather-style information
+        with space weather conditions such as solar activity,
+        geomagnetic conditions, and aurora chances.
+    </p>
+
+    <button class="close" onclick="closePopup()">Close</button>
+
+</div>
+
+<script>
+
+function refreshData() {
+
+    const activities = ["Low", "Moderate", "Low", "Elevated"];
+    const activity = activities[Math.floor(Math.random() * activities.length)];
+
+    const aurora = Math.floor(Math.random() * 61) + 10;
+
+    const winds = [410, 420, 435, 450, 470];
+
+    const wind = winds[Math.floor(Math.random() * winds.length)];
+
+    document.getElementById("activity").textContent = activity;
+    document.getElementById("aurora").textContent = aurora + "%";
+    document.getElementById("wind").textContent = wind + " km/s";
+
+    if (activity === "Elevated") {
+        document.getElementById("geo").textContent = "Active";
+
+        document.getElementById("alertText").textContent =
+            "Solar activity is elevated. Keep an eye on space-weather conditions and aurora forecasts.";
+    } else if (activity === "Moderate") {
+        document.getElementById("geo").textContent = "Unsettled";
+
+        document.getElementById("alertText").textContent =
+            "Some increased solar activity is possible. Conditions are being monitored.";
+    } else {
+        document.getElementById("geo").textContent = "Quiet";
+
+        document.getElementById("alertText").textContent =
+            "Solar conditions are currently calm. No significant geomagnetic storm is expected.";
+    }
+
+    document.getElementById("updated").textContent =
+        "Updated just now";
+
+}
+
+function showAurora() {
+
+    document.getElementById("popupTitle").textContent =
+        "🌌 Aurora Forecast";
+
+    document.getElementById("popupText").textContent =
+        "Aurora visibility depends on solar activity, geomagnetic conditions, darkness, clouds, and your location. Check the Aurora Chance number on the main screen for this prototype.";
+
+    document.getElementById("popup").style.display = "block";
+}
+
+function showInfo() {
+
+    document.getElementById("popupTitle").textContent =
+        "☀️ About Solar Weather";
+
+    document.getElementById("popupText").textContent =
+        "This is an interactive Solar Weather app prototype. The refresh button changes the simulated solar-weather readings so you can test the app interface.";
+
+    document.getElementById("popup").style.display = "block";
+}
+
+function showHome() {
+
+    document.getElementById("popup").style.display = "none";
+
+}
+
+function closePopup() {
+
+    document.getElementById("popup").style.display = "none";
+
+}
+
+</script>
+
+</body>
+</html>
